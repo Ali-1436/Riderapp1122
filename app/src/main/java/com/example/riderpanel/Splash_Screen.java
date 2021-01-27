@@ -1,12 +1,12 @@
 package com.example.riderpanel;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class Splash_Screen extends AppCompatActivity {
 
@@ -21,7 +21,7 @@ public class Splash_Screen extends AppCompatActivity {
         time.schedule(new TimerTask() {
             @Override
             public void run() {
-                Intent inte =new Intent(getApplicationContext(), MainActivity.class) ;
+                Intent inte =new Intent(getApplicationContext(), Login_screen.class) ;
                 startActivity(inte);
                 finish();
             }
