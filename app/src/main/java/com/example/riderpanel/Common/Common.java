@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Common {
-    public static final String RIDER_INFO_REFERENCE="Riders";
+    public static final String RIDER_INFO_REFERENCE="RidersInFo";
     public static final String DRIVERS_LOCATION_REFERENCES ="DriversLocation" ;
     public static final String DRIVER_INFO_REFERENCE ="DriverInfo" ;
     public static Model currentRider;
