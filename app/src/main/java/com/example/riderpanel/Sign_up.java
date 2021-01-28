@@ -61,7 +61,7 @@ public class Sign_up extends AppCompatActivity {
             public void onClick(View v) {
 
                 registerUser();
-//                startActivity(new Intent(getApplicationContext(),Home_Screen.class));
+                startActivity(new Intent(getApplicationContext(),Home_Screen.class));
             }
         });
 
@@ -70,7 +70,7 @@ public class Sign_up extends AppCompatActivity {
             public void onClick(View v) {
 
                 registerUser();
-//                startActivity(new Intent(Sign_up.this,Login_screen.class));
+                startActivity(new Intent(Sign_up.this,Login_screen.class));
             }
         });
 
