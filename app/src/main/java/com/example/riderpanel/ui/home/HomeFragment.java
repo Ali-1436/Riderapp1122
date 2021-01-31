@@ -48,7 +48,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -69,13 +68,13 @@ import java.util.List;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback, lFirebaseFailedListener, lFirebaseDriverInfoListener {
@@ -101,6 +100,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, lFireb
     private LatLng start,end;
     private float v;
     private double lat,lng;
+        private FirebaseDatabase databaseref;
 
 
     //Listener
@@ -242,21 +242,22 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, lFireb
                     addressList = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
                     cityName = addressList.get(0).getLocality();
 
-
+                    DatabaseReference databaseReference;
                     //
-                    DatabaseReference driver_location_ref= FirebaseDatabase.getInstance()
-                            .getReference(Common.DRIVERS_LOCATION_REFERENCES)
+               databaseref = FirebaseDatabase.getInstance();
+                           databaseReference =databaseref.getReference(Common.DRIVERS_LOCATION_REFERENCES)
                             .child(cityName);
-                    Snackbar.make(getView(), driver_location_ref +"", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(getView(), databaseReference +"", Snackbar.LENGTH_LONG).show();
 
 
 
 
-                    GeoFire gf=new GeoFire(driver_location_ref);
+                    GeoFire gf=new GeoFire(databaseReference);
 
 
-                    GeoQuery geoQuery=gf.queryAtLocation(new GeoLocation(location.getLatitude(),location.getLongitude()),1.0);
+                    GeoQuery geoQuery=gf.queryAtLocation(new GeoLocation(location.getLatitude(),location.getLongitude()),distance);
                     geoQuery.removeAllListeners();
+
 
 
 //                    geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
@@ -293,34 +294,35 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, lFireb
                         public void onKeyEntered(String key, GeoLocation location) {
 
                             Common.driverFound.add(new DriverGeoModel(key,location));
-                            Snackbar.make(getView(), "laction wala b chal raha hy  4", Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(getView(), "onKeyEntered  4", Snackbar.LENGTH_SHORT).show();
                         }
 
                         @Override
                         public void onKeyExited(String key) {
-                            Snackbar.make(getView(), "laction wala b chal raha hy    1", Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(getView(), " onKeyExitedwala b chal raha hy    1", Snackbar.LENGTH_SHORT).show();
                         }
 
                         @Override
                         public void onKeyMoved(String key, GeoLocation location) {
 
-                            Snackbar.make(getView(), "laction wala b chal raha hy", Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(getView(), "onKeyMoved wala b chal raha hy", Snackbar.LENGTH_SHORT).show();
                         }
 
                         @Override
                         public void onGeoQueryReady() {
 
 
-                            Snackbar.make(getView(), "onGeoQueryReady  wala b chal raha hy", Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(getView(), "onGeoQueryReady  wala b chal raha hy", Snackbar.LENGTH_LONG).show();
                             if(distance <= LIMIT_RANGE){
 
-                                Snackbar.make(getView(), "code chal rah hy continue search", Snackbar.LENGTH_SHORT).show();
+
                                 distance++;
                                 loadavaiabledrivers();//Continue search in new distance
                             }else {
                                 distance=1.0;//Rest it
 
-                                Snackbar.make(getView(), "code chal rah hy Driver wala chal rahy", Snackbar.LENGTH_SHORT).show();
+
+                                  Snackbar.make(getView(), "code chal rah hy Driver wala chal rahy", Snackbar.LENGTH_SHORT).show();
                                 addDiverMaker();
                             }
                         }
@@ -333,47 +335,100 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, lFireb
                         }
                     });
 
+//            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+//                @Override
+//                public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                    Toast.makeText(getContext(),"onChildAdded", Toast.LENGTH_LONG).show();
+//                    GeoQueryModel geoQueryModel = snapshot.getValue(GeoQueryModel.class);
+////                    Toast.makeText(getContext(),"onChildAdded = "+geoQueryModel.getL().get(0)+" one more ="+geoQueryModel.getL().get(1), Toast.LENGTH_LONG).show();
+//                        GeoLocation geoLocation = new GeoLocation(geoQueryModel.getL().get(0),
+//                                geoQueryModel.getL().get(1));
+//                        DriverGeoModel driverGeoModel = new DriverGeoModel(snapshot.getKey(), geoLocation);
+//                        Location newDriverLoaction = new Location("");
+//                        newDriverLoaction.setLatitude(geoLocation.latitude);
+//                        newDriverLoaction.setLongitude(geoLocation.longitude);
+//                        Float newDistnace = location.distanceTo(newDriverLoaction) / 1000;
+//                        if (newDistnace <= LIMIT_RANGE)
+//                            findDriverByKey(driverGeoModel);//if driver in range, add to map
+//
+//
+//
+//                }
+    //
+    //                @Override
+    //                public void onCancelled(@NonNull DatabaseError error) {
+    //                    Toast.makeText(getContext()," onCancelled",Toast.LENGTH_LONG).show();
+    //                }
+    //            });
+
+//                    databaseReference.addChildEventListener(new ChildEventListener() {
+//                        @Override
+//                        public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+//                            Toast.makeText(getContext(),"onChildAdded",Toast.LENGTH_LONG).show();
+//                        }
+//
+//                        @Override
+//                        public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+//                            Toast.makeText(getContext(),"onChildChanged",Toast.LENGTH_LONG).show();
+//                        }
+//
+//                        @Override
+//                        public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+//                            Toast.makeText(getContext()," onChildMoved",Toast.LENGTH_LONG).show();
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(@NonNull DatabaseError error) {
+//                            Toast.makeText(getContext()," onCancelled",Toast.LENGTH_LONG).show();
+//                        }
+//                    });
+//                    databaseReference.addChildEventListener(new ChildEventListener() {
+//                        @Override
+//                        public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+//
+//                            Snackbar.make(getView(), " DataSnapshot code chal rAHA HY", Snackbar.LENGTH_SHORT).show();
+//                        GeoQueryModel geoQueryModel = snapshot.getValue(GeoQueryModel.class);
+//                        GeoLocation geoLocation = new GeoLocation(geoQueryModel.getL().get(0),
+//                                geoQueryModel.getL().get(1));
+//                        DriverGeoModel driverGeoModel = new DriverGeoModel(snapshot.getKey(), geoLocation);
+//                        Location newDriverLoaction = new Location("");
+//                        newDriverLoaction.setLatitude(geoLocation.latitude);
+//                        newDriverLoaction.setLongitude(geoLocation.longitude);
+//                        Float newDistnace = location.distanceTo(newDriverLoaction) / 1000;
+//                        if (newDistnace <= LIMIT_RANGE)
+//                            findDriverByKey(driverGeoModel);//if driver in range, add to map
+//
+//
+//                        }
+//
+//
+//                        @Override
+//                        public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+//                            Snackbar.make(getView(), "onChildChanged code chal rah hy 6", Snackbar.LENGTH_SHORT).show();
+//                        }
+//
+//                        @Override
+//                        public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+//                            Snackbar.make(getView(), "onChildRemovecode chal rah hy 6", Snackbar.LENGTH_SHORT).show();
+//                        }
+//
+//                        @Override
+//                        public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+//                            Snackbar.make(getView(), " onChildMoved chal rah hy 6", Snackbar.LENGTH_SHORT).show();
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(@NonNull DatabaseError error) {
+//                            Snackbar.make(getView(), error.getMessage(), Snackbar.LENGTH_SHORT).show();
+//                        }
+//                    });
+
                 //listen to new driver in city and range
-                    driver_location_ref.addChildEventListener(new ChildEventListener() {
-                    @Override
-                    public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-                        Snackbar.make(getView(), "code chal rah hy 6", Snackbar.LENGTH_SHORT).show();
-                        GeoQueryModel geoQueryModel = snapshot.getValue(GeoQueryModel.class);
-                        GeoLocation geoLocation = new GeoLocation(geoQueryModel.getL().get(0),
-                                geoQueryModel.getL().get(1));
-                        DriverGeoModel driverGeoModel = new DriverGeoModel(snapshot.getKey(), geoLocation);
-                        Location newDriverLoaction = new Location("");
-                        newDriverLoaction.setLatitude(geoLocation.latitude);
-                        newDriverLoaction.setLongitude(geoLocation.longitude);
-                        Float newDistnace = location.distanceTo(newDriverLoaction) / 1000;
-                        if (newDistnace <= LIMIT_RANGE)
-                            findDriverByKey(driverGeoModel);//if driver in range, add to map
-
-
-                    }
-
-
-                    @Override
-                    public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-                    }
-
-                    @Override
-                    public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-
-                    }
-
-                    @Override
-                    public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
 
                 }catch(IOException e)
                 {
@@ -389,36 +444,39 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, lFireb
     }
 
     private void addDiverMaker() {
-        if(Common.driverFound.size() > 0){
+//        if(Common.driverFound.size() > 0){
             Snackbar.make(getView(), "code chal rah hy 5", Snackbar.LENGTH_SHORT).show();
 
-            Observable.fromIterable(Common.driverFound).subscribeOn(Schedulers.newThread())
+            final Disposable subscribe = Observable.fromIterable(Common.driverFound).subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(driverGeoModel -> {
                         findDriverByKey(driverGeoModel);
-                    },throwable -> {
+                    }, throwable -> {
                         Snackbar.make(getView(), throwable.getMessage(), Snackbar.LENGTH_LONG).show();
-                    },()->{});
+                    }, () -> {
+                    });
 
 
-        }else {
-            Snackbar.make(getView(),"driver not found",Snackbar.LENGTH_SHORT).show();
-        }
+//        }else {
+//            Snackbar.make(getView(),"driver not found",Snackbar.LENGTH_SHORT).show();
+//        }
     }
 
     private void findDriverByKey(DriverGeoModel driverGeoModel) {
-        Snackbar.make(getView(), "code chal rah hy  1", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(getView(),"findDriverByKey",Snackbar.LENGTH_SHORT).show();
+//        }
         FirebaseDatabase.getInstance().getReference(Common.DRIVER_INFO_REFERENCE)
                 .child(driverGeoModel.getKey())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if(snapshot.hasChildren())
-                        { Snackbar.make(getView(), "code chal rah hy   2", Snackbar.LENGTH_SHORT).show();
+                        { Snackbar.make(getView(),"onDataChange",Snackbar.LENGTH_SHORT).show();
+//        }
                             driverGeoModel.setDriverInfoModel(snapshot.getValue(DriverInfoModel.class));
                             iFirebaseDriverInfoListener.OnDriverInfoLoadSuccess(driverGeoModel);
                         }else{
-
+                            Snackbar.make(getView(),"Not found key",Snackbar.LENGTH_SHORT).show();
                             iFirebaseFailedListener.OnFirebasedLoadFaild("Not found key"+driverGeoModel.getKey());
                         }
                     }
@@ -505,6 +563,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, lFireb
 
                             }
                         }).check();
+
+
+
                         mMap.getUiSettings().setZoomControlsEnabled(true);
                 try {
                     boolean success = googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.uber_maps_style));

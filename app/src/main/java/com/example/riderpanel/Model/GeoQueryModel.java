@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class GeoQueryModel {
     private String g;
-    private ArrayList<Double>l;
+    private ArrayList<Double> l;
 
 
     public String getG() {

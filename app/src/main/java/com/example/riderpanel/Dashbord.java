@@ -22,7 +22,7 @@ public class Dashbord extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                startActivity(new Intent(Dashbord.this,Home_Screen.class));
+                startActivity(new Intent(Dashbord.this,TimeSelection.class));
             }
         });
     }
